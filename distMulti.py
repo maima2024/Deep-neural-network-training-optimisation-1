@@ -118,11 +118,11 @@ def main(argv):
     complexNet.init_sgs(num_features=num_features, batch_size=batch_size)  
       
     #train coarse model 
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     coarse_time = time.time()
     complexNet.train_multi_level(loader, error_func, learn_rate_c, epochs, begin, end
                      ,f_step_c, reg_f, alpha_f, reg_c, alpha_c, graph = False)
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     coarse_time = time.time() - coarse_time
     
     print("after coarse train")

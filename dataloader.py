@@ -90,7 +90,7 @@ class InMemDataLoader:
             store_labels = torch.cat((store_labels, labels))           
         
         myFile.create_dataset("train_labels", data = store_labels.numpy())    
-        myFile.create_dataset("train_inputs", data = store_inputs.numpy(), dtype=np.float)     
+        myFile.create_dataset("train_inputs", data = store_inputs.numpy(), dtype=float)     
         
         for i, data in enumerate(testloader, 0):
             inputs, labels = data
@@ -110,7 +110,7 @@ class InMemDataLoader:
             
             
         myFile.create_dataset("test_labels", data = store_labels.numpy())    
-        myFile.create_dataset("test_inputs", data = store_inputs.numpy(), dtype=np.float)        
+        myFile.create_dataset("test_inputs", data = store_inputs.numpy(), dtype=float)        
         
         myFile.close()
         

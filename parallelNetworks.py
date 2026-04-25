@@ -167,13 +167,13 @@ class complexNeuralNetwork:
         times = []       
         #update with synthetic gradients from last network to the first
         for i in reversed(range(self.__M-1)):
-            torch.cuda.synchronize()
+            if torch.cuda.is_available(): torch.cuda.synchronize()
             sub_net_time = time.perf_counter()
             #calculate synthetic gradient and propagate back through sub network             
             self.__sgmodules[i].backward(y, multi)
             #use optimiser to update the weights of each network
             self.__optimisers[i].step()
-            torch.cuda.synchronize()
+            if torch.cuda.is_available(): torch.cuda.synchronize()
             sub_net_time = time.perf_counter() - sub_net_time
             times.append(sub_net_time)
             """
@@ -251,7 +251,7 @@ class complexNeuralNetwork:
                 
                 if self.__conv == False:
                     inputs = inputs.view(-1, self.__nnets[0].num_features*self.__nnets[0].in_chns)                                        
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 m_load += time.perf_counter() - batch_load_time
                 t_in_loop = time.perf_counter()
                 #zero_grads
@@ -260,28 +260,28 @@ class complexNeuralNetwork:
                     
                 for s in self.__sgmodules:
                     s.zero_optimiser()
-                torch.cuda.synchronize()    
+                if torch.cuda.is_available(): torch.cuda.synchronize()    
                 batch_load_time = time.perf_counter() - batch_load_time
                 
                 #propagate  
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 tmp = time.perf_counter()
                 out = self.propagate(inputs, f_step)             
                               
                 #--------------------may add regularisation later----------------
                 
                 #calculate loss
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 tmp_loss_t = time.perf_counter()
                
                 loss = error_func(out, labels)  
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 t_loss += time.perf_counter() - tmp_loss_t
                 
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 t_forward += time.perf_counter() - tmp
                 
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 tmp = time.perf_counter()
                 #backward on loss and optimiser.step final net
                 back_t = time.perf_counter()
@@ -291,20 +291,20 @@ class complexNeuralNetwork:
                 loss.backward()             
                 self.__optimisers[-1].step()
                 
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 t_out += time.perf_counter() - tmp                
                 out_net_back_time = time.perf_counter() - out_net_back_time                
               
                 #for each sub-nn backpropagate sg - makes sense as network 
                 #can backprop as soon as it reuturns h^n
                 #update sub-neural net weights using sg
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 tmp = time.perf_counter()
                 #if self.__conv == True:
                   #  sub_back_times = self.backpropgate_SG(labels, multi)
                 #else:                    
                 sub_back_times = self.backpropgate_SG(labels, multi) 
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 t_first += time.perf_counter() - tmp                          
                 #the slowest training time of the sub-neural networks is the training time
                 sub_back_times.append(out_net_back_time)
@@ -317,11 +317,11 @@ class complexNeuralNetwork:
                 ones += np.array(sub_back_times).argmax()            
             
                 #optimise sg modules
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 tmp = time.perf_counter()
                 #if multi == False:                    
                 syn_error += self.optimise_SG_modules(labels)
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 t_opt += time.perf_counter() - tmp        
                 epoch_loss += loss.item()               
                 
@@ -478,7 +478,7 @@ class complexNeuralNetwork:
         p.start()
         processes.append(p)
         print("start")
-        torch.cuda.synchronize()
+        if torch.cuda.is_available(): torch.cuda.synchronize()
         t = time.perf_counter()
         
         for epoch in range(epochs):        
@@ -508,7 +508,7 @@ class complexNeuralNetwork:
                 losses.append(epoch_loss/i)
                 rounds.append(epoch)   
         print("end")  
-        torch.cuda.synchronize()
+        if torch.cuda.is_available(): torch.cuda.synchronize()
         t = time.perf_counter() - t    
         #send kill signal
         pipes[0][0].send(None)        

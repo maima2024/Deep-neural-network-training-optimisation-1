@@ -166,7 +166,7 @@ class PVD:
                 results.append(r)
 
             #synchronisation---------------------------------------------------
-            torch.cuda.synchronize()
+            if torch.cuda.is_available(): torch.cuda.synchronize()
             synch_time = time.perf_counter()
 
             #get minimum error
@@ -193,7 +193,7 @@ class PVD:
             
             acc = acc[2]
             if acc >= base_acc:
-                torch.cuda.synchronize()
+                if torch.cuda.is_available(): torch.cuda.synchronize()
                 synch_time = time.perf_counter() - synch_time 
                 timer += synch_time + p_time
                 print("---------------------PVD finished with accuracy:", acc, "-------------------")
@@ -202,7 +202,7 @@ class PVD:
           
             #synchronise the modesl
             self.copy_model(min_index)
-            torch.cuda.synchronize()
+            if torch.cuda.is_available(): torch.cuda.synchronize()
             synch_time = time.perf_counter() - synch_time
             #print(synch_time, p_time) 
             timer += synch_time + p_time
@@ -213,7 +213,7 @@ class PVD:
                             ,f_step, reg_f, alpha_f, reg_c, alpha_c, graph):
      
         #get time of process
-        torch.cuda.synchronize()
+        if torch.cuda.is_available(): torch.cuda.synchronize()
         run_time = time.perf_counter()
         #gets block of directions and set as instance of model
    
@@ -232,7 +232,7 @@ class PVD:
         error = model.train(trainloader, error_func, learn_rate, epochs, begin, end
                                 ,f_step, reg_f, alpha_f, reg_c, alpha_c, graph, mu, steps)
        # print("t: ",time.perf_counter()-t)
-        torch.cuda.synchronize()
+        if torch.cuda.is_available(): torch.cuda.synchronize()
         run_time = time.perf_counter() - run_time
       
         #print("mu", mu)
@@ -360,16 +360,16 @@ def main():
     pvd = PVD(device, num_proc)
     pvd.set_models(N, num_features, num_classes, func_f, func_c, weights, bias, gpu, choice, gamma)
 
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     start_time = time.perf_counter()  
     
     timer =  pvd.pvd_algo(iterations, trainloader, testloader, error_func, learn_rate, epochs, begin, end
                             ,f_step, reg_f, alpha_f, reg_c, alpha_c, graph, acc)
 
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     print("total time:", time.perf_counter()-start_time)
     print("theoretical distributed time:", timer)
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     #print("time_old: ", (time.time()-start_time)/num_proc)
     result = pvd.models[0].test(testloader, begin, end, f_step)
     print("test accuracy result:", result)

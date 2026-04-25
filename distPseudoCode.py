@@ -127,7 +127,7 @@ def main():
     #accBefore = complexNet.test(loader, begin = 0, end = 10000, f_step = f_step)
     
     #train_network
-    #torch.cuda.synchronize()
+    #if torch.cuda.is_available(): torch.cuda.synchronize()
     #start_time = time.perf_counter()
     train_time = complexNet.distTrain(loader, error_func, learn_rate, epochs, begin, end
                     ,f_step, reg_f, alpha_f, reg_c, alpha_c, graph, False, M)
@@ -137,7 +137,7 @@ def main():
     
     print("accBefore", accBefore)
     print("accAfter", accAfter)
-    #torch.cuda.synchronize()
+    #if torch.cuda.is_available(): torch.cuda.synchronize()
     #end_time = time.perf_counter() - start_time    
      
     #print("total time in series:" , end_time)

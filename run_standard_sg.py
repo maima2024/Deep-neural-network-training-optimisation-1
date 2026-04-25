@@ -97,11 +97,11 @@ def main():
     complexNet.init_sgs(num_features=num_features, batch_size=batch_size)  
   
     #train_network
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     start_time = time.perf_counter()
     train_time = complexNet.train(loader, error_func, learn_rate, epochs, begin, end
                      ,f_step, reg_f, alpha_f, reg_c, alpha_c, graph)
-    torch.cuda.synchronize()
+    if torch.cuda.is_available(): torch.cuda.synchronize()
     end_time = time.perf_counter() - start_time    
   
     print("total time in series:" , end_time)
